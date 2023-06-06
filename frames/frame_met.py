@@ -1,5 +1,22 @@
 import tkinter as tk
 import datetime as dt
+from sqlalchemy import Column, Integer, String, create_engine, inspect
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
+Base = declarative_base()
+
+class Measurement(Base):
+    __tablename__ = 'measurements'
+    id = Column(Integer, primary_key=True)
+    temperature = Column(String)
+    humidity = Column(String)
+    pressure = Column(String)
+    outdoor_temperature = Column(String)
+    outdoor_humidity = Column(String)
+    outdoor_pressure = Column(String)
+    
+
 
 now = dt.datetime.now().replace(microsecond=0)
 
@@ -35,6 +52,7 @@ class FrmTemp(tk.Frame):
                                       font=('Verdana', 13))
         self.lbl_maap_time.grid(row=0, column=0, columnspan=6, padx=10, pady=(10, 0), sticky='ew')
 
+        self.db_url = 'sqlite:///C:/py_code-learning/py_code-learning_Parcijalni_IoT/parcijalni_IoT/meteo_app.db'
         self.labels = [
             tk.Label(self, text="Indoor Temperature: -°C", font=('Vedrana', 13)),
             tk.Label(self, text="Outdoor Temperature: -°C", font=('Vedrana', 13)),
@@ -51,7 +69,7 @@ class FrmTemp(tk.Frame):
         self.btn_fetch_data = tk.Button(self.master, text='Dohvati Podatke', command=self.fetch_data)
         self.btn_fetch_data.config(bg='blue', fg='white', width=15, height=2)
         self.btn_fetch_data.pack(pady=(10, 0))
-        
+
         self.clothing_icon_label = tk.Label(self, text="Clothing Icon: -", font=('Vedrana', 13))
         self.clothing_icon_label.grid(row=4, column=0, columnspan=2, padx=10, pady=10, sticky='ew')
 
@@ -62,9 +80,9 @@ class FrmTemp(tk.Frame):
         self.labels[3].config(text=f"Outdoor Humidity: {outdoor_hum}")
         self.labels[4].config(text=f"Indoor Pressure: {pressure} ")
         self.labels[5].config(text=f"Outdoor Pressure: {outdoor_press} ")
-        
+
         outdoor_temp = int(outdoor_temp.split('°')[0])
-        
+
         if outdoor_temp > 22:
             self.clothing_icon_label.config(text="Obuci kratke rukave")
         elif 12 <= outdoor_temp <= 22:
@@ -81,6 +99,23 @@ class FrmTemp(tk.Frame):
         outdoor_temp = '28°C'
         outdoor_hum = '70%'
         outdoor_press = '982 hPa'
-     
 
+        engine = create_engine(self.db_url)
+        Session = sessionmaker(bind=engine)
+        session = Session()
+
+        inspector = inspect(engine)
+        if not inspector.has_table(Measurement.__tablename__):
+            Base.metadata.create_all(engine)
+            print("Created table 'measurements'.")
+
+        measurement = Measurement(temperature=temperature,
+                                  humidity=humidity,
+                                  pressure=pressure,
+                                  outdoor_temperature=outdoor_temp,
+                                  outdoor_humidity=outdoor_hum,
+                                  outdoor_pressure=outdoor_press)
+        session.add(measurement)
+        session.commit()
+        session.close()
         self.update_data(temperature, outdoor_temp, humidity, outdoor_hum, pressure, outdoor_press)

@@ -1,6 +1,7 @@
 import tkinter as tk
-from frames.frame_met import FrmMeteo
-from frames.frame_met import FrmTemp
+from frames.frame_met import FrmMeteo, FrmTemp
+
+
 
 
 class MainWindow(tk.Tk):
