@@ -3,6 +3,8 @@ import datetime as dt
 from sqlalchemy import Column, Integer, String, create_engine, inspect
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+import requests
+import xml.etree.ElementTree as ET
 
 Base = declarative_base()
 
@@ -74,32 +76,43 @@ class FrmTemp(tk.Frame):
         self.clothing_icon_label.grid(row=4, column=0, columnspan=2, padx=10, pady=10, sticky='ew')
 
     def update_data(self, temperature, outdoor_temp, humidity, outdoor_hum, pressure, outdoor_press):
-        self.labels[0].config(text=f"Indoor Temperature: {temperature}")
-        self.labels[1].config(text=f"Outdoor Temperature: {outdoor_temp}")
-        self.labels[2].config(text=f"Indoor Humidity: {humidity}")
-        self.labels[3].config(text=f"Outdoor Humidity: {outdoor_hum}")
-        self.labels[4].config(text=f"Indoor Pressure: {pressure} ")
-        self.labels[5].config(text=f"Outdoor Pressure: {outdoor_press} ")
+        self.labels[0].config(text=f"Unutarnja Temperatura: {temperature}")
+        self.labels[1].config(text=f"Vanjska Temperatura: {outdoor_temp}")
+        self.labels[2].config(text=f"Vlaznost zraka: {humidity}")
+        self.labels[3].config(text=f"Vlaznost zraka(vani): {outdoor_hum}")
+        self.labels[4].config(text=f"Unutarnji pritisak zraka: {pressure} ")
+        self.labels[5].config(text=f"Vanjski Pritisak zraka: {outdoor_press} ")
 
-        outdoor_temp = int(outdoor_temp.split('°')[0])
 
-        if outdoor_temp > 22:
+        outdoor_temp_deg = outdoor_temp.split('°')[0]  
+
+        if float(outdoor_temp_deg) > 22:
             self.clothing_icon_label.config(text="Obuci kratke rukave")
-        elif 12 <= outdoor_temp <= 22:
+        elif 12 <= float(outdoor_temp_deg) <= 22:
             self.clothing_icon_label.config(text="Obucite laganu jaknu")
-        elif 0 <= outdoor_temp < 12:
+        elif 0 <= float(outdoor_temp_deg) < 12:
             self.clothing_icon_label.config(text="Obucite deblju jaknu")
         else:
             self.clothing_icon_label.config(text="Obucite kapu, sal i zimsku jaknu !")
 
     def fetch_data(self):
-        temperature = '25°C'
+        temperature = '22°C'
         humidity = '50%'
-        pressure = '1013 hPa'
-        outdoor_temp = '28°C'
-        outdoor_hum = '70%'
-        outdoor_press = '982 hPa'
+        pressure = '1014 hPa'
+    
+        url = "https://vrijeme.hr/hrvatska_n.xml"
+        response = requests.get(url)
+        xml_data = response.content
 
+        root = ET.fromstring(xml_data)
+        for grad in root.iter('Grad'):
+            grad_ime = grad.find('GradIme').text
+            if grad_ime == 'Zagreb-Maksimir':
+                outdoor_temp = grad.find('Podatci/Temp').text + "°C"
+                outdoor_hum = grad.find('Podatci/Vlaga').text + "%"
+                outdoor_press = grad.find('Podatci/Tlak').text + " hPa"
+                break
+        
         engine = create_engine(self.db_url)
         Session = sessionmaker(bind=engine)
         session = Session()
