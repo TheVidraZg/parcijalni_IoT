@@ -1,0 +1,13 @@
+Imam dojam da još sve nije najbolje sjelo, ali je na dobrom putu.
+
+U datoteci Tk_app_meteo.py nema potrebe da konfigurirate redove i kolone, ako okvire (FrmMeteo i FrmTemp) pozicionirate preko pack() managera.
+Dakle, ove konfiguracije se odnose za onu klasu u kojoj su podeseni pa ih onda u toj klasi i koristite Ovo nije greška, ali nema smisla podešavati nešto što ne koristite.
+
+Datoteka frame_met.py ima sve. Bilo bi dobro da ovo pokušate dio po dio razdvoiti. Ne sve odjednom, nego mali dio po mali dio. Tako ćete imate veću kontrolu.
+
+Nisam vidio da koristite onaj Scrollable Frame.
+
+
+U svakom slučaju snalazite se, nekako navigirate kroz kod ... fali Vam još malo da to dobro sjedne. Najbolje je uzeti male dijelove, nemojte ih kopirati nego ih napišite sami, 
+a slobodno imajte otvoren kod koji prepisujete. Izmite jako malo i neka to radi. Zatim dodajte još jedan mali dio funkcionalnosti i neka i to radi pa onda opet ... 
+to će Vam pomoći da shvatite kako sve radi i kako je sve međusobno integrirano te što je s čime povezano i kako. Nako toga, je sve puno lakše.
